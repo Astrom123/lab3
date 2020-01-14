@@ -1,8 +1,8 @@
 #include <Servo.h>
 
 int sensors_num = 3;
-int echoPins[] = {1, 3, 5};
-int trigPins[] = {2, 4, 6};
+int echoPins[] = {2, 3, 5};
+int trigPins[] = {1, 4, 6};
 
 int angles[] = {0, 180, 90};
 int dists[] = {0, 0, 0};
@@ -38,17 +38,23 @@ void loop() {
 }
 
 int getAngle(){
+    int minDist = 2000;
+    int angle = 0;
     for (int i = 0; i < sensors_num; i++)
     {
       int dist = readDist(trigPins[i], echoPins[i]);
       Serial.println(dist);
-      if (dists[i] - dist > 10)
+      if (dists[i] - dist > 20)
       {
-        return angles[i];
+        if (dist < minDist)
+        {
+          minDist = dist;
+          angle = angles[i];
+        }
       }
     }
 
-    return 0;
+    return angle;
 }
 
 float readDist(int trigPin, int echoPin)
