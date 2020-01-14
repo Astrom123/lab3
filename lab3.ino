@@ -3,13 +3,17 @@
 int sensors_num = 3;
 int echoPins[] = {1, 3, 5};
 int trigPins[] = {2, 4, 6};
-int angles[] = {0, 90, 180};
+
+int angles[] = {0, 180, 90};
+int dists[] = {0, 0, 0};
 
 Servo servo;
+int servoPin = 10;
 int basePosition = 0;
 
 void setup()
 {
+  Serial.begin(115200);
   for (int i = 0; i < sensors_num; i++)
   {
     pinMode(echoPins[i], INPUT);
@@ -17,30 +21,34 @@ void setup()
     digitalWrite(trigPins[i], LOW);
   }
   
-  servo.attach(10);
+  servo.attach(servoPin);
   servo.write(basePosition);
+
+  for (int i = 0; i < sensors_num; i++)
+  {
+    dists[i] = readDist(trigPins[i], echoPins[i]);
+    Serial.println(dists[i]);
+  }
 }
 
 void loop() {
   int angle = getAngle();
   servo.write(angle);
+  delay(300);
 }
 
 int getAngle(){
-    int angle = angles[0];
-    float minDist = readDist(trigPins[0], echoPins[0]);
-
-    for (int i = 1; i < sensors_num; i++)
+    for (int i = 0; i < sensors_num; i++)
     {
       int dist = readDist(trigPins[i], echoPins[i]);
-      if (dist < minDist)
+      Serial.println(dist);
+      if (dists[i] - dist > 10)
       {
-        minDist = dist;
-        angle = angles[i];
+        return angles[i];
       }
     }
 
-    return angle;
+    return 0;
 }
 
 float readDist(int trigPin, int echoPin)
@@ -57,6 +65,5 @@ float readPulse(int trigPin, int echoPin)
   digitalWrite(trigPin, LOW);
 
   long duration = pulseIn(echoPin, HIGH);
-
   return duration;
 }
